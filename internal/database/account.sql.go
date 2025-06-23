@@ -9,6 +9,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 const createAccount = `-- name: CreateAccount :one
@@ -23,7 +24,7 @@ INSERT INTO accounts(
 
 type CreateAccountParams struct {
 	Owner    string
-	Balance  string
+	Balance  decimal.Decimal
 	Currency string
 }
 
@@ -120,7 +121,7 @@ WHERE id = $1
 
 type UpdateAccountParams struct {
 	ID      uuid.UUID
-	Balance string
+	Balance decimal.Decimal
 }
 
 func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) error {

@@ -13,4 +13,12 @@ migrateup:
 migratedown:
 	goose -dir sql/schema postgres "postgres://postgres:1234@localhost:5432/simple_bank?sslmode=disable" down
 
+generatesql:
+	sqlc generate
+
+
+
+
+
+
 .PHONY: postgres createdb dropdb migrateup migratedown

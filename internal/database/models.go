@@ -9,12 +9,13 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/shopspring/decimal"
 )
 
 type Account struct {
 	ID        uuid.UUID
 	Owner     string
-	Balance   string
+	Balance   decimal.Decimal
 	Currency  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -23,7 +24,7 @@ type Account struct {
 type Entry struct {
 	ID        uuid.UUID
 	AccountID uuid.UUID
-	Amount    string
+	Amount    decimal.Decimal
 	CreatedAt sql.NullTime
 	UpdatedAt sql.NullTime
 }
@@ -32,7 +33,7 @@ type Transfer struct {
 	ID            uuid.UUID
 	FromAccountID uuid.UUID
 	ToAccountID   uuid.UUID
-	Amount        string
+	Amount        decimal.Decimal
 	CreatedAt     time.Time
 	UpdatedAt     time.Time
 }
