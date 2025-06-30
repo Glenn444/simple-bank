@@ -4,15 +4,15 @@ import (
 	"context"
 	"testing"
 
-	"github.com/shopspring/decimal"
+	"github.com/Glenn444/banking-app/util"
 	"github.com/stretchr/testify/require"
 )
 
 func TestCreateAccount(t *testing.T){
 	arg := CreateAccountParams{
-		Owner: "tom",
-		Balance: decimal.NewFromFloat(100.00), //NewFromFloat(100.00)
-		Currency: "USD",
+		Owner: util.RandomOwner(),
+		Balance:util.RandomMoney(), //NewFromFloat(100.00)
+		Currency: util.RandomCurrency(),
 	}
 	
 	
