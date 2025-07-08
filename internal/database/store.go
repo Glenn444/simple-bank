@@ -57,4 +57,37 @@ type TransferTxResult struct{
 }
 
 //TransferTx performs a money Transfer from one account to another
-func (store *Store) TransferTx(ctx context.Context,arg TrasferTxParams)(TransferTxResult,error){}
+func (store *Store) TransferTx(ctx context.Context,arg TrasferTxParams)(TransferTxResult,error){
+	var result TransferTxResult
+
+	err := store.execTx(ctx,func(q *Queries)error{
+		var err error
+		result.Transfer,err = q.CreateTransfer(ctx,CreateTransferParams(arg))
+
+		if err != nil{
+			return err
+		}
+
+		result.FromEntry,err = q.CreateEntries(ctx,CreateEntriesParams{
+			AccountID: arg.FromAccountID,
+			Amount: arg.Amount.Neg(),
+		})
+		if err != nil{
+			return  err
+		}
+		result.ToEntry,err = q.CreateEntries(ctx,CreateEntriesParams{
+			AccountID: arg.ToAccountID,
+			Amount: arg.Amount,
+		})
+
+		//TODO: update accounts' balance
+		if err != nil{
+			
+		}
+		return  nil
+	})
+	if err != nil{
+		return  TransferTxResult{},err
+	}
+	return  result,nil
+}
