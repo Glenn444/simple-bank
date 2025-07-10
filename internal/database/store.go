@@ -30,7 +30,9 @@ func (store *Store) execTx(ctx context.Context, fn func(*Queries)error)error{
 		return err
 	}
 
-	q := New(tx)
+	//generate a queries object tied to a specific transaction tx
+	q := New(tx) 
+	
 	err = fn(q)
 	if err != nil{
 		if rbErr := tx.Rollback(); rbErr != nil{
