@@ -9,7 +9,16 @@ import (
 	"github.com/Glenn444/banking-app/util"
 	"github.com/stretchr/testify/require"
 )
-
+type TestingT interface {
+	Helper()
+	Fatal(args ...interface{})
+	Fatalf(format string, args ...interface{})
+	Error(args ...interface{})
+	Errorf(format string, args ...interface{})
+	FailNow()
+	Log(args ...interface{})
+	Logf(format string, args ...interface{})
+}
 func TestCreateAccount(t *testing.T){
 	arg := CreateAccountParams{
 		Owner: util.RandomOwner(),
@@ -34,7 +43,8 @@ func TestCreateAccount(t *testing.T){
 }
 
 //helper func to createRandom Accounts in the db
-func createRandomAccount(t *testing.T)Account{
+func createRandomAccount(t TestingT)Account{
+	t.Helper()
 	arg := CreateAccountParams{
 		Owner: util.RandomOwner(),
 		Balance: util.RandomMoney(),
