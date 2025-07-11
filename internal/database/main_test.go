@@ -25,7 +25,7 @@ func TestMain(m *testing.M)  {
 		log.Fatalf("Error loading .env %v",err)
 }
 	var dbSource = os.Getenv("DB_URL")
-	log.Printf("Db source %v",dbSource)
+	//log.Printf("Db source %v",dbSource)
 	testDB,err = sql.Open(dbDriver,dbSource)
 	if err != nil{
 		log.Fatal("cannot connect to db:\n",err)
