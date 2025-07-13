@@ -11,13 +11,13 @@ import (
 )
 type TestingT interface {
 	Helper()
-	Fatal(args ...interface{})
-	Fatalf(format string, args ...interface{})
-	Error(args ...interface{})
-	Errorf(format string, args ...interface{})
+	Fatal(args ...any)
+	Fatalf(format string, args ...any)
+	Error(args ...any)
+	Errorf(format string, args ...any)
 	FailNow()
-	Log(args ...interface{})
-	Logf(format string, args ...interface{})
+	Log(args ...any)
+	Logf(format string, args ...any)
 }
 func TestCreateAccount(t *testing.T){
 	arg := CreateAccountParams{

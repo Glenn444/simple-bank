@@ -22,7 +22,8 @@ func TestTransferTx_Success(t *testing.T) {
 	account1 := createRandomAccount(t)
 	account2 := createRandomAccount(t)
 
-	//Store inial Balances
+	//fmt.Printf("account1: %v \n account2: %v \n", account1, account2)
+	//Store initial Balances
 	initialBalance1 := account1.Balance
 	initialBalance2 := account2.Balance
 	amount := decimal.NewFromInt(10)
@@ -33,6 +34,7 @@ func TestTransferTx_Success(t *testing.T) {
 		Amount:        amount,
 	})
 
+	//fmt.Printf("result: %v\n", result)
 	require.NoError(t, err)
 	require.NotEmpty(t, result)
 
@@ -54,7 +56,8 @@ func TestTransferTx_Success(t *testing.T) {
 	require.Equal(t, amount.Round(2), result.ToEntry.Amount.Round(2))
 
 	//Verify account balances were updated correctly
-	require.Equal(t, initialBalance1.Sub(amount), result.FromAccount.Balance)
+	
+	require.Equal(t, initialBalance1.Sub(amount).Round(2), result.FromAccount.Balance.Round(2))
 	require.Equal(t, initialBalance2.Add(amount), result.ToAccount.Balance)
 
 	//Verify balances in database
@@ -62,9 +65,9 @@ func TestTransferTx_Success(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, initialBalance1.Sub(amount), updatedAccount1.Balance)
 
-	updatedAccount2, err := store.GetAccount(context.Background(), account1.ID)
+	updatedAccount2, err := store.GetAccount(context.Background(), account2.ID)
 	require.NoError(t, err)
-	require.Equal(t, initialBalance2.Sub(amount), updatedAccount2.Balance)
+	require.Equal(t, initialBalance2.Add(amount), updatedAccount2.Balance)
 }
 
 func TestTransferTx_Concurrent(t *testing.T) {
@@ -118,7 +121,10 @@ func TestTransferTx_Concurrent(t *testing.T) {
 	expectedBalance1 := initialBalance1.Sub(totalTransferred)
 	expectedBalance2 := initialBalance2.Add(totalTransferred)
 
-	require.Equal(t, expectedBalance1.Round(2), finalAccount1.Balance.Round(2))
+	// In your concurrent test, add this before the assertion:
+	fmt.Printf("Expected final balance: %s, Actual final balance: %s\n",
+		expectedBalance1.String(), finalAccount1.Balance.String())
+	require.Equal(t, expectedBalance1, finalAccount1.Balance)
 	require.Equal(t, expectedBalance2, finalAccount2.Balance)
 
 	// Verify total money in system is conserved
@@ -215,7 +221,6 @@ func TestTransferTx_InvalidAccounts(t *testing.T) {
 				Amount:        amount,
 			})
 
-			
 			require.Error(t, err)
 			require.Empty(t, result.Transfer)
 			require.Contains(t, err.Error(), tc.expectedError)
@@ -253,7 +258,7 @@ func TestTransferTx_InvalidAmounts(t *testing.T) {
 				Amount:        tc.amount,
 			})
 
-			fmt.Printf("invalid_amount %v\n",err)
+			fmt.Printf("invalid_amount %v\n", err)
 			require.Error(t, err)
 			require.Empty(t, result.Transfer)
 			require.Contains(t, err.Error(), tc.expectedError)
@@ -466,7 +471,6 @@ func BenchmarkTransferTx(b *testing.B) {
 	account2 := createRandomAccount(b)
 	amount := decimal.NewFromInt(10)
 
-	
 	for b.Loop() {
 		_, err := store.TransferTx(context.Background(), TrasferTxParams{
 			FromAccountID: account1.ID,
