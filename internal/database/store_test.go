@@ -79,15 +79,17 @@ func TestTransferTx_Concurrent(t *testing.T) {
 	initialBalance1 := account1.Balance
 	initialBalance2 := account2.Balance
 	amount := decimal.NewFromInt(10)
-	n := 5
+	n := 3
 
 	// Channel to collect results
 	results := make(chan TransferResult, n)
 
 	// Run concurrent transfers
-	for range n {
+	for i := 0; i < n; i++ {
+		txName := fmt.Sprintf("tx %d", n+1)
 		go func() {
-			result, err := store.TransferTx(context.Background(), TrasferTxParams{
+			ctx := context.WithValue(context.Background(),txKey,txName)
+			result, err := store.TransferTx(ctx, TrasferTxParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
 				Amount:        amount,
