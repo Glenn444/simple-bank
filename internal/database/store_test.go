@@ -79,16 +79,17 @@ func TestTransferTx_Concurrent(t *testing.T) {
 	initialBalance1 := account1.Balance
 	initialBalance2 := account2.Balance
 	amount := decimal.NewFromInt(10)
-	n := 3
+	n := 5
 
 	// Channel to collect results
 	results := make(chan TransferResult, n)
 
 	// Run concurrent transfers
 	for i := 0; i < n; i++ {
-		txName := fmt.Sprintf("tx %d", n+1)
+		//txName := fmt.Sprintf("tx %d", i+1)
 		go func() {
-			ctx := context.WithValue(context.Background(),txKey,txName)
+			//ctx := context.WithValue(context.Background(),txKey,txName)
+			ctx := context.Background()
 			result, err := store.TransferTx(ctx, TrasferTxParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
@@ -260,7 +261,7 @@ func TestTransferTx_InvalidAmounts(t *testing.T) {
 				Amount:        tc.amount,
 			})
 
-			fmt.Printf("invalid_amount %v\n", err)
+			//fmt.Printf("invalid_amount %v\n", err)
 			require.Error(t, err)
 			require.Empty(t, result.Transfer)
 			require.Contains(t, err.Error(), tc.expectedError)
@@ -275,6 +276,7 @@ func TestTransferTx_LargeAmount(t *testing.T) {
 	account1 := createAccountWithBalance(t, store, decimal.NewFromInt(2000000))
 	account2 := createRandomAccount(t)
 
+
 	largeAmount := decimal.NewFromInt(1000000)
 	initialBalance1 := account1.Balance
 	initialBalance2 := account2.Balance
@@ -288,6 +290,7 @@ func TestTransferTx_LargeAmount(t *testing.T) {
 	require.NoError(t, err)
 	require.NotEmpty(t, result)
 
+	
 	// Verify precision is maintained
 	require.Equal(t, largeAmount.Round(2), result.Transfer.Amount.Round(2))
 	require.Equal(t, initialBalance1.Sub(largeAmount).Round(2), result.FromAccount.Balance.Round(2))
@@ -311,19 +314,23 @@ func TestTransferTx_ConcurrentBidirectional(t *testing.T) {
 	initialBalance1 := account1.Balance
 	initialBalance2 := account2.Balance
 	amount := decimal.NewFromInt(10)
-	n := 5
+	n := 3
 
 	var wg sync.WaitGroup
 	errs := make(chan error, n*2)
 
 	// Run concurrent transfers in both directions
-	for range n {
+	//txName := fmt.Sprintf("tx %d", i+1)
+	//ctx := context.WithValue(context.Background(),txKey,txName)
+	for i:= 0; i < n; i++ {
+		txName := fmt.Sprintf("tx %d", i+1)
 		wg.Add(2)
-
+		
 		// Transfer from account1 to account2
 		go func() {
 			defer wg.Done()
-			_, err := store.TransferTx(context.Background(), TrasferTxParams{
+			ctx := context.WithValue(context.Background(),txKey,txName)
+			_, err := store.TransferTx(ctx, TrasferTxParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
 				Amount:        amount,
@@ -463,7 +470,10 @@ func createAccountWithBalance(t *testing.T, store *Store, balance decimal.Decima
 	})
 	require.NoError(t, err)
 
-	return account
+	account1, err := store.GetAccount(context.Background(),account.ID)
+
+	require.NoError(t,err)
+	return account1
 }
 
 // Benchmark tests

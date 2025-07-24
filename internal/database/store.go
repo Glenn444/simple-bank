@@ -61,21 +61,23 @@ type TransferTxResult struct {
 type txKeyType struct{}
 
 var txKey = txKeyType{}
+
 // TransferTx performs a money Transfer from one account to another
 func (store *Store) TransferTx(ctx context.Context, arg TrasferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 
 	err := store.execTx(ctx, func(q *Queries) error {
 		var err error
+		txName := ctx.Value(txKey)
+
+		fmt.Println(txName, "create transfer")
 		result.Transfer, err = q.CreateTransfer(ctx, CreateTransferParams(arg))
 
 		if err != nil {
 			return err
 		}
 
-		txName := ctx.Value(txKey)
-
-		fmt.Println(txName,"create entry 1")
+		fmt.Println(txName, "create entry 1")
 		result.FromEntry, err = q.CreateEntries(ctx, CreateEntriesParams{
 			AccountID: arg.FromAccountID,
 			Amount:    arg.Amount.Neg(),
@@ -84,7 +86,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TrasferTxParams) (Transf
 			return err
 		}
 
-		fmt.Println(txName,"create entry 2")
+		fmt.Println(txName, "create entry 2")
 		result.ToEntry, err = q.CreateEntries(ctx, CreateEntriesParams{
 			AccountID: arg.ToAccountID,
 			Amount:    arg.Amount,
@@ -94,29 +96,45 @@ func (store *Store) TransferTx(ctx context.Context, arg TrasferTxParams) (Transf
 		}
 
 		//TODO: update accounts' balance
+		var fromAccount, toAccount Account
+		if arg.FromAccountID.String() < arg.ToAccountID.String() {
+			fmt.Println(txName, "Get Account (lock) from -> to ")
+			fmt.Println(txName, "Get Account 1")
+			fromAccount, err = q.GetAccountByIdForUpdate(ctx, arg.FromAccountID)
+			if err != nil {
+				return err
+			}
 
-		fmt.Println(txName,"Get Account 1")
-		account1, err := q.GetAccountByIdForUpdate(ctx, arg.FromAccountID)
-		if err != nil {
-			return err
+			fmt.Println(txName, "Get Account 2")
+			toAccount, err = q.GetAccountByIdForUpdate(ctx, arg.ToAccountID)
+			if err != nil {
+				return err
+			}
+		} else {
+			fmt.Println(txName, "Get Account (lock) to -> from")
+			
+
+			fmt.Println(txName, "Get Account 2")
+			toAccount, err = q.GetAccountByIdForUpdate(ctx, arg.ToAccountID)
+			if err != nil {
+				return err
+			}
+			fmt.Println(txName, "Get Account 1")
+			fromAccount, err = q.GetAccountByIdForUpdate(ctx, arg.FromAccountID)
+			if err != nil {
+				return err
+			}
 		}
-
-		fmt.Println(txName,"Get Account 2")
-		account2, err := q.GetAccountByIdForUpdate(ctx, arg.ToAccountID)
-		if err != nil {
-			return err
-		}
-
 		//1. Check if senders balance is able to transfer amount
-		if account1.Balance.LessThan(arg.Amount) {
+		if fromAccount.Balance.LessThan(arg.Amount) {
 			return fmt.Errorf("insufficient funds: account %v has balance %v, transfer amount %v",
-				arg.FromAccountID, account1.Balance, arg.Amount)
+				arg.FromAccountID, fromAccount.Balance, arg.Amount)
 		}
 
-		updateAccount1Balance := account1.Balance.Sub(arg.Amount)
-		updateAccount2Balance := account2.Balance.Add(arg.Amount)
+		updateAccount1Balance := fromAccount.Balance.Sub(arg.Amount)
+		updateAccount2Balance := toAccount.Balance.Add(arg.Amount)
 
-		fmt.Println(txName,"update Account 1")
+		fmt.Println(txName, "update Account 1")
 		err = q.UpdateAccount(ctx, UpdateAccountParams{
 			ID:      arg.FromAccountID,
 			Balance: updateAccount1Balance,
@@ -125,7 +143,7 @@ func (store *Store) TransferTx(ctx context.Context, arg TrasferTxParams) (Transf
 			return err
 		}
 
-		fmt.Println(txName,"update Account 2")
+		fmt.Println(txName, "update Account 2")
 		err = q.UpdateAccount(ctx, UpdateAccountParams{
 			ID:      arg.ToAccountID,
 			Balance: updateAccount2Balance,
@@ -134,13 +152,13 @@ func (store *Store) TransferTx(ctx context.Context, arg TrasferTxParams) (Transf
 			return err
 		}
 
-		fmt.Println(txName,"Get Account 1")
+		fmt.Println(txName, "Get Account 1")
 		result.FromAccount, err = q.GetAccount(ctx, arg.FromAccountID)
 		if err != nil {
 			return err
 		}
 
-		fmt.Println(txName,"Get Account 2")
+		fmt.Println(txName, "Get Account 2")
 		result.ToAccount, err = q.GetAccount(ctx, arg.ToAccountID)
 		if err != nil {
 			return err
