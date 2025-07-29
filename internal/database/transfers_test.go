@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/Glenn444/banking-app/util"
+	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/require"
 )
 
@@ -14,7 +15,7 @@ func createRandomTransfer(t *testing.T, fromAccount, toAccount Account) Transfer
 	arg := CreateTransferParams{
 		FromAccountID: fromAccount.ID,
 		ToAccountID:   toAccount.ID,
-		Amount:        util.RandomMoney(),
+		Amount:        decimal.NewFromInt(100),
 	}
 
 	transfer, err := testQueries.CreateTransfer(context.Background(), arg)
@@ -33,16 +34,19 @@ func createRandomTransfer(t *testing.T, fromAccount, toAccount Account) Transfer
 }
 
 func TestCreateTransfer(t *testing.T) {
-	fromAccount := createRandomAccount(t)
-	toAccount := createRandomAccount(t)
+	str := NewStore(testDB)
+	fromAccount := createAccountWithBalance(t,str,decimal.NewFromInt(1000))
+	toAccount := createAccountWithBalance(t,str,decimal.NewFromInt(500))
+	
 
 	createRandomTransfer(t, fromAccount, toAccount)
 }
 
 func TestGetTransfer(t *testing.T) {
-	fromAccount := createRandomAccount(t)
-	toAccount := createRandomAccount(t)
-
+	str := NewStore(testDB)
+	fromAccount := createAccountWithBalance(t,str,decimal.NewFromInt(1000))
+	toAccount := createAccountWithBalance(t,str,decimal.NewFromInt(500))
+	
 	transfer1 := createRandomTransfer(t, fromAccount, toAccount)
 
 	transfer2, err := testQueries.GetTransfer(context.Background(), transfer1.ID)
@@ -58,9 +62,10 @@ func TestGetTransfer(t *testing.T) {
 }
 
 func TestListTransfers(t *testing.T) {
-	fromAccount := createRandomAccount(t)
-	toAccount := createRandomAccount(t)
-
+	str := NewStore(testDB)
+	fromAccount := createAccountWithBalance(t,str,decimal.NewFromInt(1000))
+	toAccount := createAccountWithBalance(t,str,decimal.NewFromInt(500))
+	
 	for range 10 {
 		createRandomTransfer(t, fromAccount, toAccount)
 	}
@@ -80,9 +85,10 @@ func TestListTransfers(t *testing.T) {
 }
 
 func TestUpdateTransfer(t *testing.T) {
-	fromAccount := createRandomAccount(t)
-	toAccount := createRandomAccount(t)
-
+	str := NewStore(testDB)
+	fromAccount := createAccountWithBalance(t,str,decimal.NewFromInt(1000))
+	toAccount := createAccountWithBalance(t,str,decimal.NewFromInt(500))
+	
 	transfer1 := createRandomTransfer(t, fromAccount, toAccount)
 	newAmount := util.RandomMoney()
 
@@ -100,9 +106,10 @@ func TestUpdateTransfer(t *testing.T) {
 }
 
 func TestDeleteTransfer(t *testing.T) {
-	fromAccount := createRandomAccount(t)
-	toAccount := createRandomAccount(t)
-
+	str := NewStore(testDB)
+	fromAccount := createAccountWithBalance(t,str,decimal.NewFromInt(1000))
+	toAccount := createAccountWithBalance(t,str,decimal.NewFromInt(500))
+	
 	transfer := createRandomTransfer(t, fromAccount, toAccount)
 
 	err := testQueries.DeleteTransfer(context.Background(), transfer.ID)
