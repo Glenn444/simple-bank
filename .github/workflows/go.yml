@@ -44,13 +44,21 @@ jobs:
       uses: actions/checkout@v2
 
     - name: golang-migrate installation
-      run: curl -fsSL \
-       https://raw.githubusercontent.com/pressly/goose/master/install.sh |\
-       GOOSE_INSTALL=$HOME/.goose sh -s v3.5.0
+      run: |
+       mkdir -p $HOME/.goose
+       curl -fsSL \
+        https://raw.githubusercontent.com/pressly/goose/master/install.sh |\
+        GOOSE_INSTALL=$HOME/.goose sh -s v3.5.0
 
     - name: Check goose
+      run: $HOME/.goose/bin/goose -version
+
+    - name: Add goose to PATH
+      run: echo "$HOME/.goose/bin" >> $GITHUB_PATH
+
+    - name: Check goose version
       run: goose -version
-      
+
     - name: Run migrations
       run: make migrateup
 
