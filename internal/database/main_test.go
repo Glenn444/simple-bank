@@ -21,9 +21,12 @@ func TestMain(m *testing.M)  {
 	
 	envFilePath := "/Users/mac/Desktop/Learngo/simple-bank/.env"
 	err := godotenv.Load(envFilePath)
-	if err != nil{
-		log.Fatalf("Error loading .env %v",err)
-}
+// 	if err != nil{
+// 		log.Fatalf("Error loading .env %v",err)
+// }
+	if err != nil {
+    log.Println("No .env file found, using environment variables")
+	}
 	var dbSource = os.Getenv("DB_URL")
 	//log.Printf("Db source %v",dbSource)
 	testDB,err = sql.Open(dbDriver,dbSource)
