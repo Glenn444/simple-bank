@@ -10,8 +10,11 @@ import (
 )
 func main()  {
 	err := godotenv.Load()
-	if err != nil{
-		log.Fatal("Error loading .env file")
+	if err != nil {
+    log.Println("No .env file found, using environment variables")
 	}
+	// if err != nil{
+	// 	log.Fatal("Error loading .env file")
+	// }
 	fmt.Print("dbUrl: ",os.Getenv("DB_URL"))
 }
