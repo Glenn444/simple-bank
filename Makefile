@@ -8,10 +8,10 @@ dropdb:
 	docker exec -it postgres12 dropdb simple_bank
 
 migrateup:
-	goose -dir sql/schema postgres "postgres://postgres:postgres@localhost:5432/simple_bank?sslmode=disable" up
+	goose -dir sql/schema postgres "postgres://postgres:1234@localhost:5432/simple_bank?sslmode=disable" up
 
 migratedown:
-	goose -dir sql/schema postgres "postgres://postgres:postgres@localhost:5432/simple_bank?sslmode=disable" down
+	goose -dir sql/schema postgres "postgres://postgres:1234@localhost:5432/simple_bank?sslmode=disable" down
 
 generatesql:
 	sqlc generate
