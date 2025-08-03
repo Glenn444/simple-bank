@@ -18,8 +18,9 @@ generatesql:
 test:
 	go test -v -cover ./...
 
+server:
+	go run main.go
 
 
 
-
-.PHONY: postgres createdb dropdb migrateup migratedown generatesql test
+.PHONY: postgres createdb dropdb migrateup migratedown generatesql test server

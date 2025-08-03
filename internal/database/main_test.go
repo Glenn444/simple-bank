@@ -19,7 +19,7 @@ var testDB *sql.DB
 
 func TestMain(m *testing.M)  {
 	
-	envFilePath := "/Users/mac/Desktop/Learngo/simple-bank/.env"
+	envFilePath := "../../.env"
 	err := godotenv.Load(envFilePath)
 // 	if err != nil{
 // 		log.Fatalf("Error loading .env %v",err)
