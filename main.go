@@ -3,27 +3,24 @@ package main
 import (
 	"database/sql"
 	"log"
-	"os"
 
 	"github.com/Glenn444/banking-app/api"
 	db "github.com/Glenn444/banking-app/internal/database"
-	"github.com/joho/godotenv"
+	"github.com/Glenn444/banking-app/util"
 	_ "github.com/lib/pq"
 )
 
-const (
-	dbDriver = "postgres"
-	Address = "0.0.0:8080"
-)
 
 
 func main()  {
-	envFilePath := ".env"
-	err := godotenv.Load(envFilePath)
+	config,err := util.LoadConfig(".")
 	if err != nil{
-		log.Fatalf("Error loading .env %v",err)
-}
-	var dbSource = os.Getenv("DB_URL")
+		log.Fatal("error loading the config, ",err)
+	}
+	
+	var dbSource = config.DB_URL //os.Getenv("DB_URL")
+	var dbDriver = config.DBDriver
+	var Address = config.ServerAddress
 
 	conn, err := sql.Open(dbDriver,dbSource)
 
