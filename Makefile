@@ -20,7 +20,9 @@ test:
 
 server:
 	go run main.go
+mock:
+	mockgen -destination internal/database/mock/store.go github.com/Glenn444/banking-app/internal/database Store
 
 
 
-.PHONY: postgres createdb dropdb migrateup migratedown generatesql test server
+.PHONY: postgres createdb dropdb migrateup migratedown generatesql test server mock

@@ -10,7 +10,6 @@ import (
 	"github.com/shopspring/decimal"
 )
 
-
 type createAccountRequest struct{
 	Owner string `json:"owner" binding:"required"`
 	Currency string `json:"currency" binding:"required,oneof=USD EUR"`

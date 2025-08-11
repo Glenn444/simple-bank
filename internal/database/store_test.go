@@ -458,7 +458,7 @@ func TestTransferTx_ContextCancellation(t *testing.T) {
 }
 
 // Helper function to create an account with specific balance
-func createAccountWithBalance(t *testing.T, store *Store, balance decimal.Decimal) Account {
+func createAccountWithBalance(t *testing.T, store Store, balance decimal.Decimal) Account {
 	t.Helper()
 
 	account := createRandomAccount(t)
