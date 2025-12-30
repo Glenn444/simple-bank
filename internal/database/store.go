@@ -11,8 +11,7 @@ import (
 
 type Store interface{
 	Querier
-	TransferTx(ctx context.Context, arg TrasferTxParams) (TransferTxResult, error) 
-
+	TransferTx(ctx context.Context, arg TrasferTxParams) (TransferTxResult, error)
 }
 
 type SQLStore struct {
