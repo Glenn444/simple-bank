@@ -14,40 +14,63 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-
-func TestGetAccountApi(t *testing.T)  {
+func TestGetAccountApi(t *testing.T) {
 	account := randomAccount()
 
-	ctrl := gomock.NewController(t)
-	//defer ctrl.Finish()
-	
-	store := mock_database.NewMockStore(ctrl)
+	testCases := []struct {
+		name          string
+		accountID     uuid.UUID
+		buildStubs    func(store *mock_database.MockStore)
+		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
+	}{
+		{
+			name:      "OK",
+			accountID: account.ID,
+			buildStubs: func(store *mock_database.MockStore) {
+				//build stubs
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					Times(1).
+					Return(account, nil)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				//check response
+				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+	}
 
-	//build stubs
-	store.EXPECT().
-		GetAccount(gomock.Any(),gomock.Eq(account.ID)).
-		Times(1).
-		Return(account,nil)
+	for i := range testCases {
+		tc := testCases[i]
 
-	//start test server and send request
-	server := NewServer(store)
-	recorder := httptest.NewRecorder()
+		t.Run(tc.name, func(t *testing.T) {
 
-	url := fmt.Sprintf("/accounts/%s",account.ID)
-	request,err := http.NewRequest(http.MethodGet,url,nil)
-	require.NoError(t,err)
+			ctrl := gomock.NewController(t)
 
-	server.router.ServeHTTP(recorder,request)
+			store := mock_database.NewMockStore(ctrl)
+			//build stubs
+			tc.buildStubs(store)
 
-	//check response
-	require.Equal(t,http.StatusOK,recorder.Code)
+			//start test server and send request
+			server := NewServer(store)
+			recorder := httptest.NewRecorder()
+
+			url := fmt.Sprintf("/accounts/%s", account.ID)
+			request, err := http.NewRequest(http.MethodGet, url, nil)
+			require.NoError(t, err)
+
+			server.router.ServeHTTP(recorder, request)
+			//check response
+			tc.checkResponse(t,recorder)
+		})
+	}
 }
 
-func randomAccount() db.Account{
+func randomAccount() db.Account {
 	return db.Account{
-		ID: uuid.New(),
-		Owner: util.RandomOwner(),
-		Balance: util.RandomMoney(),
+		ID:       uuid.New(),
+		Owner:    util.RandomOwner(),
+		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),
 	}
 }
