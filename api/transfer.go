@@ -25,7 +25,15 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		return
 	}
 
-	
+	//check if the from account is valid
+	if !server.validAccountCurrency(ctx,req.FromAccountID,req.Currency){
+		return
+	}
+
+	//check if the to account is valid
+	if !server.validAccountCurrency(ctx,req.ToAccountID,req.Currency){
+		return
+	}
 
 	arg := db.CreateTransferParams{
 		FromAccountID: req.FromAccountID,
@@ -33,12 +41,12 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		Amount:        req.Amount,
 	}
 
-	acc, err := server.store.CreateTransfer(ctx, arg)
+	result, err := server.store.CreateTransfer(ctx, arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, acc)
+	ctx.JSON(http.StatusOK, result)
 }
 
 func (server *Server) validAccountCurrency(ctx *gin.Context, accounID uuid.UUID, currency string) bool {
@@ -53,7 +61,7 @@ func (server *Server) validAccountCurrency(ctx *gin.Context, accounID uuid.UUID,
 	}
 
 	if account.Currency != currency {
-		err := fmt.Errorf("account [%d] currency mismatch: %s vs %s", account.ID, account.Currency, currency)
+		err := fmt.Errorf("account [%v] currency mismatch: %s vs %s", account.ID, account.Currency, currency)
 		ctx.JSON(http.StatusBadRequest,errorResponse(err))
 		return false
 	}
