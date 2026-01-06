@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -19,13 +20,13 @@ func TestGetAccountApi(t *testing.T) {
 
 	testCases := []struct {
 		name          string
-		accountID     uuid.UUID
+		accountID     string
 		buildStubs    func(store *mock_database.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:      "OK",
-			accountID: account.ID,
+			accountID: account.ID.String(),
 			buildStubs: func(store *mock_database.MockStore) {
 				//build stubs
 				store.EXPECT().
@@ -36,6 +37,50 @@ func TestGetAccountApi(t *testing.T) {
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				//check response
 				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name:      "NotFound",
+			accountID: account.ID.String(),
+			buildStubs: func(store *mock_database.MockStore) {
+				//build stubs
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					Times(1).
+					Return(db.Account{}, sql.ErrNoRows)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				//check response
+				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name:      "InternalServerError",
+			accountID: account.ID.String(),
+			buildStubs: func(store *mock_database.MockStore) {
+				//build stubs
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Eq(account.ID)).
+					Times(1).
+					Return(db.Account{}, sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				//check response
+				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+			},
+		},
+		{
+			name:      "InvalidID",
+			accountID: "invalid-uuid",
+			buildStubs: func(store *mock_database.MockStore) {
+				//build stubs
+				store.EXPECT().
+					GetAccount(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				//check response
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
 			},
 		},
 	}
@@ -55,7 +100,7 @@ func TestGetAccountApi(t *testing.T) {
 			server := NewServer(store)
 			recorder := httptest.NewRecorder()
 
-			url := fmt.Sprintf("/accounts/%s", account.ID)
+			url := fmt.Sprintf("/accounts/%s", tc.accountID)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
