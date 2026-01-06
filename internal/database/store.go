@@ -11,7 +11,7 @@ import (
 
 type Store interface{
 	Querier
-	TransferTx(ctx context.Context, arg TrasferTxParams) (TransferTxResult, error)
+	TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error)
 }
 
 type SQLStore struct {
@@ -48,7 +48,7 @@ func (store *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) erro
 	return tx.Commit()
 }
 
-type TrasferTxParams struct {
+type TransferTxParams struct {
 	FromAccountID uuid.UUID       `json:"from_account_id"`
 	ToAccountID   uuid.UUID       `json:"to_account_id"`
 	Amount        decimal.Decimal `json:"amount"`
@@ -68,7 +68,7 @@ type txKeyType struct{}
 var txKey = txKeyType{}
 
 // TransferTx performs a money Transfer from one account to another
-func (store *SQLStore) TransferTx(ctx context.Context, arg TrasferTxParams) (TransferTxResult, error) {
+func (store *SQLStore) TransferTx(ctx context.Context, arg TransferTxParams) (TransferTxResult, error) {
 	var result TransferTxResult
 
 	err := store.execTx(ctx, func(q *Queries) error {

@@ -35,13 +35,13 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		return
 	}
 
-	arg := db.CreateTransferParams{
+	arg := db.TransferTxParams{
 		FromAccountID: req.FromAccountID,
 		ToAccountID:   req.ToAccountID,
 		Amount:        req.Amount,
 	}
 
-	result, err := server.store.CreateTransfer(ctx, arg)
+	result, err := server.store.TransferTx(ctx,arg)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -49,6 +49,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 
+//check if to account and from account have matching currency type
 func (server *Server) validAccountCurrency(ctx *gin.Context, accounID uuid.UUID, currency string) bool {
 	account, err := server.store.GetAccount(ctx, accounID)
 	if err != nil {

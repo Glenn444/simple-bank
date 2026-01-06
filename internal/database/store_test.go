@@ -28,7 +28,7 @@ func TestTransferTx_Success(t *testing.T) {
 	initialBalance2 := account2.Balance
 	amount := decimal.NewFromInt(10)
 
-	result, err := store.TransferTx(context.Background(), TrasferTxParams{
+	result, err := store.TransferTx(context.Background(), TransferTxParams{
 		FromAccountID: account1.ID,
 		ToAccountID:   account2.ID,
 		Amount:        amount,
@@ -90,7 +90,7 @@ func TestTransferTx_Concurrent(t *testing.T) {
 		go func() {
 			//ctx := context.WithValue(context.Background(),txKey,txName)
 			ctx := context.Background()
-			result, err := store.TransferTx(ctx, TrasferTxParams{
+			result, err := store.TransferTx(ctx, TransferTxParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
 				Amount:        amount,
@@ -144,7 +144,7 @@ func TestTransferTx_InsufficientFunds(t *testing.T) {
 	// Try to transfer more than account1's balance
 	largeAmount := account1.Balance.Add(decimal.NewFromInt(100))
 
-	result, err := store.TransferTx(context.Background(), TrasferTxParams{
+	result, err := store.TransferTx(context.Background(), TransferTxParams{
 		FromAccountID: account1.ID,
 		ToAccountID:   account2.ID,
 		Amount:        largeAmount,
@@ -169,7 +169,7 @@ func TestTransferTx_SameAccount(t *testing.T) {
 	account := createRandomAccount(t)
 	amount := decimal.NewFromInt(10)
 
-	result, err := store.TransferTx(context.Background(), TrasferTxParams{
+	result, err := store.TransferTx(context.Background(), TransferTxParams{
 		FromAccountID: account.ID,
 		ToAccountID:   account.ID,
 		Amount:        amount,
@@ -218,7 +218,7 @@ func TestTransferTx_InvalidAccounts(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result, err := store.TransferTx(context.Background(), TrasferTxParams{
+			result, err := store.TransferTx(context.Background(), TransferTxParams{
 				FromAccountID: tc.fromAccountID,
 				ToAccountID:   tc.toAccountID,
 				Amount:        amount,
@@ -255,7 +255,7 @@ func TestTransferTx_InvalidAmounts(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result, err := store.TransferTx(context.Background(), TrasferTxParams{
+			result, err := store.TransferTx(context.Background(), TransferTxParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
 				Amount:        tc.amount,
@@ -281,7 +281,7 @@ func TestTransferTx_LargeAmount(t *testing.T) {
 	initialBalance1 := account1.Balance
 	initialBalance2 := account2.Balance
 
-	result, err := store.TransferTx(context.Background(), TrasferTxParams{
+	result, err := store.TransferTx(context.Background(), TransferTxParams{
 		FromAccountID: account1.ID,
 		ToAccountID:   account2.ID,
 		Amount:        largeAmount,
@@ -330,7 +330,7 @@ func TestTransferTx_ConcurrentBidirectional(t *testing.T) {
 		go func() {
 			defer wg.Done()
 			ctx := context.WithValue(context.Background(),txKey,txName)
-			_, err := store.TransferTx(ctx, TrasferTxParams{
+			_, err := store.TransferTx(ctx, TransferTxParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
 				Amount:        amount,
@@ -341,7 +341,7 @@ func TestTransferTx_ConcurrentBidirectional(t *testing.T) {
 		// Transfer from account2 to account1
 		go func() {
 			defer wg.Done()
-			_, err := store.TransferTx(context.Background(), TrasferTxParams{
+			_, err := store.TransferTx(context.Background(), TransferTxParams{
 				FromAccountID: account2.ID,
 				ToAccountID:   account1.ID,
 				Amount:        amount,
@@ -386,7 +386,7 @@ func TestTransferTx_DeadlockPrevention(t *testing.T) {
 
 		go func() {
 			defer wg.Done()
-			_, err := store.TransferTx(context.Background(), TrasferTxParams{
+			_, err := store.TransferTx(context.Background(), TransferTxParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
 				Amount:        amount,
@@ -396,7 +396,7 @@ func TestTransferTx_DeadlockPrevention(t *testing.T) {
 
 		go func() {
 			defer wg.Done()
-			_, err := store.TransferTx(context.Background(), TrasferTxParams{
+			_, err := store.TransferTx(context.Background(), TransferTxParams{
 				FromAccountID: account2.ID,
 				ToAccountID:   account1.ID,
 				Amount:        amount,
@@ -437,7 +437,7 @@ func TestTransferTx_ContextCancellation(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 
-	result, err := store.TransferTx(ctx, TrasferTxParams{
+	result, err := store.TransferTx(ctx, TransferTxParams{
 		FromAccountID: account1.ID,
 		ToAccountID:   account2.ID,
 		Amount:        amount,
@@ -484,7 +484,7 @@ func BenchmarkTransferTx(b *testing.B) {
 	amount := decimal.NewFromInt(10)
 
 	for b.Loop() {
-		_, err := store.TransferTx(context.Background(), TrasferTxParams{
+		_, err := store.TransferTx(context.Background(), TransferTxParams{
 			FromAccountID: account1.ID,
 			ToAccountID:   account2.ID,
 			Amount:        amount,
@@ -504,7 +504,7 @@ func BenchmarkTransferTx_Concurrent(b *testing.B) {
 	b.ResetTimer()
 	b.RunParallel(func(pb *testing.PB) {
 		for pb.Next() {
-			_, err := store.TransferTx(context.Background(), TrasferTxParams{
+			_, err := store.TransferTx(context.Background(), TransferTxParams{
 				FromAccountID: account1.ID,
 				ToAccountID:   account2.ID,
 				Amount:        amount,
