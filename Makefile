@@ -22,6 +22,8 @@ server:
 	go run main.go
 mock:
 	mockgen -destination internal/database/mock/store.go github.com/Glenn444/banking-app/internal/database Store
+createmigration:
+	goose -dir sql/schema create create_users_table sql
 
 
 
