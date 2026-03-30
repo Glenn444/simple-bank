@@ -21,12 +21,10 @@ func TestMain(m *testing.M)  {
 	
 	envFilePath := "../../.env"
 	err := godotenv.Load(envFilePath)
-// 	if err != nil{
-// 		log.Fatalf("Error loading .env %v",err)
-// }
-	if err != nil {
-    log.Println("No .env file found, using environment variables")
-	}
+	if err != nil{
+		log.Fatalf("Error loading .env %v",err)
+}
+
 	var dbSource = os.Getenv("DB_URL")
 	//log.Printf("Db source %v",dbSource)
 	testDB,err = sql.Open(dbDriver,dbSource)

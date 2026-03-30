@@ -12,7 +12,7 @@ import (
 
 
 //helper func to createRandom Users in the db
-func createRandomUser(t TestingT)User{
+func CreateRandomUser(t TestingT)User{
 	arg := CreateUsersParams{
 		Username: util.RandomOwner(),
 		HashedPassword:"randomstring",
@@ -38,10 +38,10 @@ func createRandomUser(t TestingT)User{
 }
 
 func TestCreateUser(t *testing.T){
-	createRandomUser(t)
+	CreateRandomUser(t)
 }
 func TestGetUser(t *testing.T){
-	user1 := createRandomUser(t)
+	user1 := CreateRandomUser(t)
 
 	user2,err := testQueries.GetUser(context.Background(),user1.Username)
 	require.NoError(t,err)

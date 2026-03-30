@@ -19,9 +19,13 @@ type TestingT interface {
 	Log(args ...any)
 	Logf(format string, args ...any)
 }
+
+//in the accounts tests we must create a user,
+//then link them up to an account,with their fk
 func TestCreateAccount(t *testing.T){
+	user := CreateRandomUser(t)
 	arg := CreateAccountParams{
-		Owner: util.RandomOwner(),
+		Owner: user.Username,
 		Balance:util.RandomMoney(), //NewFromFloat(100.00)
 		Currency: util.RandomCurrency(),
 	}
@@ -45,8 +49,9 @@ func TestCreateAccount(t *testing.T){
 //helper func to createRandom Accounts in the db
 func createRandomAccount(t TestingT)Account{
 	t.Helper()
+	user := CreateRandomUser(t)
 	arg := CreateAccountParams{
-		Owner: util.RandomOwner(),
+		Owner: user.Username,
 		Balance: util.RandomMoney(),
 		Currency: util.RandomCurrency(),
 	}
