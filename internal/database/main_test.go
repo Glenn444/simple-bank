@@ -17,22 +17,26 @@ const (
 var testQueries *Queries
 var testDB *sql.DB
 
-func TestMain(m *testing.M)  {
-	
-	envFilePath := "../../.env"
-	err := godotenv.Load(envFilePath)
-	if err != nil{
-		log.Fatalf("Error loading .env %v",err)
-}
+func TestMain(m *testing.M) {
+    // Load .env for local dev only; silently ignore if missing (e.g. in CI)
+    _ = godotenv.Load("../../.env")
 
-	var dbSource = os.Getenv("DB_URL")
-	//log.Printf("Db source %v",dbSource)
-	testDB,err = sql.Open(dbDriver,dbSource)
-	if err != nil{
-		log.Fatal("cannot connect to db:\n",err)
-	}
+    dbSource := os.Getenv("DB_URL")
+    if dbSource == "" {
+        log.Fatal("DB_URL is not set")
+    }
 
-	testQueries = New(testDB)
+    var err error
+    testDB, err = sql.Open(dbDriver, dbSource)
+    if err != nil {
+        log.Fatal("cannot connect to db:", err)
+    }
 
-	os.Exit(m.Run())
+    err = testDB.Ping()
+    if err != nil {
+        log.Fatal("cannot ping db:", err)
+    }
+
+    testQueries = New(testDB)
+    os.Exit(m.Run())
 }
