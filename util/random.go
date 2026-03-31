@@ -35,7 +35,7 @@ func RandomOwner() string{
 }
 
 func RandomMoney()decimal.Decimal{
-	return decimal.NewFromInt(RandomInt(0,1000))
+	return decimal.NewFromInt(RandomInt(1,1000))
 }
 
 func RandomCurrency()string{
