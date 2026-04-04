@@ -11,14 +11,14 @@ import (
 	"github.com/lib/pq"
 )
 
-type createUserRequest struct {
+type CreateUserRequest struct {
 	Username string `json:"username" binding:"required,alphanum"`
 	FullName string `json:"full_name"`
 	Email    string `json:"email" binding:"required,email"`
 	Password string `json:"password" binding:"required,min=6"`
 }
 
-type createUserResponse struct {
+type CreateUserResponse struct {
 	Username          string
 	FullName          string
 	Email             string
@@ -27,7 +27,7 @@ type createUserResponse struct {
 }
 
 func (server *Server) createUser(ctx *gin.Context) {
-	var req createUserRequest
+	var req CreateUserRequest
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
@@ -58,7 +58,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	resp := createUserResponse{
+	resp := CreateUserResponse{
 		Username:          user.Username,
 		Email:             user.Email,
 		FullName:          user.FullName,
@@ -69,18 +69,19 @@ func (server *Server) createUser(ctx *gin.Context) {
 
 }
 
-type getUserRequest struct {
+type SearchUserParams struct {
 	Username string `json:"username" binding:"required,alphanum"`
 }
 
 func (server *Server) getUser(ctx *gin.Context) {
-	var req getUserRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	var param SearchUserParams
+	if err := ctx.ShouldBindQuery(&param); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	user, err := server.store.GetUser(ctx, req.Username)
+
+	user, err := server.store.GetUser(ctx, param.Username)
 	if err != nil {
 		if pqError, ok := err.(*pq.Error); ok {
 			switch pqError.Code.Name() {
@@ -94,7 +95,7 @@ func (server *Server) getUser(ctx *gin.Context) {
 		return
 	}
 
-	resp := createUserResponse{
+	resp := CreateUserResponse{
 		Username:          user.Username,
 		Email:             user.Email,
 		FullName:          user.FullName,
