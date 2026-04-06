@@ -42,7 +42,7 @@ func TestExpiredToken(t *testing.T){
 	duration := -time.Minute
 
 	token,err := m.CreateToken(username,duration)
-	require.Error(t,err)
+	require.NoError(t,err)
 	require.NotEmpty(t,token)
 
 	payload,errPayload := m.VerifyToken(token)
