@@ -70,7 +70,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 }
 
 type SearchUserParams struct {
-	Username string `json:"username" binding:"required,alphanum"`
+	Username string `form:"username" binding:"required,alphanum"`
 }
 
 func (server *Server) getUser(ctx *gin.Context) {

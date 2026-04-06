@@ -1,13 +1,23 @@
 package token
 
 import (
+	"errors"
+	"fmt"
 	"time"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 )
 
+var (
+	ErrInvalidToken = errors.New("invalid token")
+	ErrExpiredToken = errors.New("token is expired")
+)
+
+
 // Payload contains the payload data of the token
 type Payload struct {
+	jwt.RegisteredClaims
 	ID        uuid.UUID
 	Username  string    `json:"username"`
 	ExpiredAt time.Time `json:"expired_at"`
@@ -21,12 +31,15 @@ func NewPayload(username string,duration time.Duration)(*Payload,error){
 	if err != nil{
 		return nil,err
 	}
-
+fmt.Printf("generated uuid: %v\n",newUUID)
 	payload :=  &Payload{
-		ID: newUUID,
-		Username: username,
-		ExpiredAt: time.Now().Add(duration),
-		CreatedAt: time.Now(),
+		RegisteredClaims: jwt.RegisteredClaims{
+			ID: newUUID.String(),
+			Subject: username,
+			IssuedAt: jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
+		},
+		Username:username,
 	}
 
 	return payload,nil
