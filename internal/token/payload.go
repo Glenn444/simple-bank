@@ -31,7 +31,7 @@ func NewPayload(username string,duration time.Duration)(*Payload,error){
 	if err != nil{
 		return nil,err
 	}
-fmt.Printf("generated uuid: %v\n",newUUID)
+fmt.Printf("generated uuid: %v\n",newUUID.String())
 	payload :=  &Payload{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID: newUUID.String(),
@@ -40,6 +40,7 @@ fmt.Printf("generated uuid: %v\n",newUUID)
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(duration)),
 		},
 		Username:username,
+		ID: newUUID,
 	}
 
 	return payload,nil
