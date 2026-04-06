@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Glenn444/banking-app/util"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/stretchr/testify/require"
 )
 
@@ -50,4 +51,28 @@ func TestExpiredToken(t *testing.T){
 	require.EqualError(t,errPayload,ErrExpiredToken.Error())
 	require.Nil(t,payload)
 
+}
+
+
+func TestInvalidJWTTokenAlgNone(t *testing.T){
+	// 1. Create the payload
+	payload,err := NewPayload(util.RandomOwner(),time.Minute)
+	require.NoError(t,err)
+	require.NotEmpty(t,payload)
+
+	//2. create the token
+	jwttoken := jwt.NewWithClaims(jwt.SigningMethodNone,payload)
+	token, err := jwttoken.SignedString(jwt.UnsafeAllowNoneSignatureType)
+	require.NotEmpty(t,token)
+	require.NoError(t,err)
+
+
+	//3. create a new maker
+	m,err := NewJWTMaker(util.RandomString(32))
+
+	//4. verify the token
+	payloadToken,err := m.VerifyToken(token)
+	require.Error(t,err)
+	require.Nil(t,payloadToken)
+	require.EqualError(t,err,ErrInvalidToken.Error())
 }
