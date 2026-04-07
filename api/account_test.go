@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -36,7 +37,14 @@ func TestGetAccountApi(t *testing.T) {
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				//check response
+				var gotAccount db.Account
+				err := json.NewDecoder(recorder.Body).Decode(&gotAccount)
+
 				require.Equal(t, http.StatusOK, recorder.Code)
+				require.NoError(t, err)
+				require.Equal(t, account.ID, gotAccount.ID)
+				require.Equal(t, account.Owner, gotAccount.Owner)
+				require.Equal(t, account.Balance, gotAccount.Balance)
 			},
 		},
 		{
@@ -97,10 +105,9 @@ func TestGetAccountApi(t *testing.T) {
 			tc.buildStubs(store)
 
 			//start test server and send request
-			
-			server := newTestServer(t,store)
+
+			server := newTestServer(t, store)
 			recorder := httptest.NewRecorder()
-		
 
 			url := fmt.Sprintf("/accounts/%s", tc.accountID)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
