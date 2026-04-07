@@ -1,9 +1,12 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	db "github.com/Glenn444/banking-app/internal/database"
+	"github.com/Glenn444/banking-app/internal/token"
+	"github.com/Glenn444/banking-app/util"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -11,12 +14,22 @@ import (
 
 // Server serves HTTP requests for our banking service
 type Server struct{
+	config util.Config
+	tokenMaker token.Maker
 	store db.Store
 	router *gin.Engine
 }
 
-func NewServer(store db.Store) *Server{
-	server := &Server{store: store}
+func NewServer(config util.Config,store db.Store) (*Server,error){
+	jwtTokenMaker,err := token.NewJWTMaker(config.TokenSymmetricKey)
+	if err != nil{
+		return nil,fmt.Errorf("cannot create token maker %w\n",err)
+	}
+	server := &Server{
+		tokenMaker: jwtTokenMaker,
+		store: store,
+		config: config,
+	}
 
 	 // Force log's color
     gin.ForceConsoleColor()
@@ -40,7 +53,7 @@ func NewServer(store db.Store) *Server{
 
 
 	server.router = router
-	return server
+	return server,nil
 }
 
 //start runs the HTTP server on a specific address

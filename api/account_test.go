@@ -97,8 +97,12 @@ func TestGetAccountApi(t *testing.T) {
 			tc.buildStubs(store)
 
 			//start test server and send request
-			server := NewServer(store)
+			config := util.Config{
+				TokenSymmetricKey: "12345678901234567890123456789012", // 32 chars
+			}
+			server, err := NewServer(config, store)
 			recorder := httptest.NewRecorder()
+			require.NoError(t,err)
 
 			url := fmt.Sprintf("/accounts/%s", tc.accountID)
 			request, err := http.NewRequest(http.MethodGet, url, nil)
@@ -106,7 +110,7 @@ func TestGetAccountApi(t *testing.T) {
 
 			server.router.ServeHTTP(recorder, request)
 			//check response
-			tc.checkResponse(t,recorder)
+			tc.checkResponse(t, recorder)
 		})
 	}
 }
