@@ -22,8 +22,8 @@ INSERT INTO entries(
 `
 
 type CreateEntriesParams struct {
-	AccountID uuid.UUID
-	Amount    decimal.Decimal
+	AccountID uuid.UUID       `json:"account_id"`
+	Amount    decimal.Decimal `json:"amount"`
 }
 
 func (q *Queries) CreateEntries(ctx context.Context, arg CreateEntriesParams) (Entry, error) {
@@ -75,8 +75,8 @@ OFFSET $2
 `
 
 type ListEntriesParams struct {
-	Limit  int32
-	Offset int32
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
 }
 
 func (q *Queries) ListEntries(ctx context.Context, arg ListEntriesParams) ([]Entry, error) {
@@ -115,8 +115,8 @@ WHERE id = $1
 `
 
 type UpdateEntryParams struct {
-	ID     uuid.UUID
-	Amount decimal.Decimal
+	ID     uuid.UUID       `json:"id"`
+	Amount decimal.Decimal `json:"amount"`
 }
 
 func (q *Queries) UpdateEntry(ctx context.Context, arg UpdateEntryParams) error {

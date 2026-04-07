@@ -23,9 +23,9 @@ INSERT INTO accounts(
 `
 
 type CreateAccountParams struct {
-	Owner    string
-	Balance  decimal.Decimal
-	Currency string
+	Owner    string          `json:"owner"`
+	Balance  decimal.Decimal `json:"balance"`
+	Currency string          `json:"currency"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
@@ -99,8 +99,8 @@ OFFSET $2
 `
 
 type ListAccountsParams struct {
-	Limit  int32
-	Offset int32
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
 }
 
 func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error) {
@@ -140,8 +140,8 @@ WHERE id = $1
 `
 
 type UpdateAccountParams struct {
-	ID      uuid.UUID
-	Balance decimal.Decimal
+	ID      uuid.UUID       `json:"id"`
+	Balance decimal.Decimal `json:"balance"`
 }
 
 func (q *Queries) UpdateAccount(ctx context.Context, arg UpdateAccountParams) error {

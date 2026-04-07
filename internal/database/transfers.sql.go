@@ -23,9 +23,9 @@ INSERT INTO transfers(
 `
 
 type CreateTransferParams struct {
-	FromAccountID uuid.UUID
-	ToAccountID   uuid.UUID
-	Amount        decimal.Decimal
+	FromAccountID uuid.UUID       `json:"from_account_id"`
+	ToAccountID   uuid.UUID       `json:"to_account_id"`
+	Amount        decimal.Decimal `json:"amount"`
 }
 
 func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) (Transfer, error) {
@@ -79,8 +79,8 @@ OFFSET $2
 `
 
 type ListTransfersParams struct {
-	Limit  int32
-	Offset int32
+	Limit  int32 `json:"limit"`
+	Offset int32 `json:"offset"`
 }
 
 func (q *Queries) ListTransfers(ctx context.Context, arg ListTransfersParams) ([]Transfer, error) {
@@ -120,8 +120,8 @@ WHERE id = $1
 `
 
 type UpdateTransferParams struct {
-	ID     uuid.UUID
-	Amount decimal.Decimal
+	ID     uuid.UUID       `json:"id"`
+	Amount decimal.Decimal `json:"amount"`
 }
 
 func (q *Queries) UpdateTransfer(ctx context.Context, arg UpdateTransferParams) error {

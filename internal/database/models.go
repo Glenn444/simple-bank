@@ -13,36 +13,36 @@ import (
 )
 
 type Account struct {
-	ID        uuid.UUID
-	Owner     string
-	Balance   decimal.Decimal
-	Currency  string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        uuid.UUID       `json:"id"`
+	Owner     string          `json:"owner"`
+	Balance   decimal.Decimal `json:"balance"`
+	Currency  string          `json:"currency"`
+	CreatedAt time.Time       `json:"created_at"`
+	UpdatedAt time.Time       `json:"updated_at"`
 }
 
 type Entry struct {
-	ID        uuid.UUID
-	AccountID uuid.UUID
-	Amount    decimal.Decimal
-	CreatedAt sql.NullTime
-	UpdatedAt sql.NullTime
+	ID        uuid.UUID       `json:"id"`
+	AccountID uuid.UUID       `json:"account_id"`
+	Amount    decimal.Decimal `json:"amount"`
+	CreatedAt sql.NullTime    `json:"created_at"`
+	UpdatedAt sql.NullTime    `json:"updated_at"`
 }
 
 type Transfer struct {
-	ID            uuid.UUID
-	FromAccountID uuid.UUID
-	ToAccountID   uuid.UUID
-	Amount        decimal.Decimal
-	CreatedAt     time.Time
-	UpdatedAt     time.Time
+	ID            uuid.UUID       `json:"id"`
+	FromAccountID uuid.UUID       `json:"from_account_id"`
+	ToAccountID   uuid.UUID       `json:"to_account_id"`
+	Amount        decimal.Decimal `json:"amount"`
+	CreatedAt     time.Time       `json:"created_at"`
+	UpdatedAt     time.Time       `json:"updated_at"`
 }
 
 type User struct {
-	Username          string
-	HashedPassword    string
-	FullName          string
-	Email             string
-	PasswordChangedAt time.Time
-	CreatedAt         time.Time
+	Username          string    `json:"username"`
+	HashedPassword    string    `json:"hashed_password"`
+	FullName          string    `json:"full_name"`
+	Email             string    `json:"email"`
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt         time.Time `json:"created_at"`
 }
