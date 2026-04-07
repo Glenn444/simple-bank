@@ -2,7 +2,6 @@ package token
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -31,7 +30,6 @@ func NewPayload(username string,duration time.Duration)(*Payload,error){
 	if err != nil{
 		return nil,err
 	}
-fmt.Printf("generated uuid: %v\n",newUUID.String())
 	payload :=  &Payload{
 		RegisteredClaims: jwt.RegisteredClaims{
 			ID: newUUID.String(),
