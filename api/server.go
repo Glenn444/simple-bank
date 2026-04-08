@@ -50,6 +50,7 @@ func NewServer(config util.Config,store db.Store) (*Server,error){
 
 	router.POST("/user", server.createUser)
 	router.GET("/user", server.getUser)
+	router.GET("/users",server.getAllUsers)
 
 	router.POST("/login", server.loginUser)
 
@@ -65,6 +66,10 @@ func (server *Server) Start(address string) error{
 
 func errorResponse(err error)gin.H{
 	return  gin.H{"error":err.Error()}
+}
+
+func errorMessage(message string)gin.H{
+	return gin.H{"error:":message}
 }
 
 func (server *Server) welcome(ctx *gin.Context){

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	db "github.com/Glenn444/banking-app/internal/database"
@@ -143,7 +144,7 @@ func (server *Server)loginUser(ctx *gin.Context){
 	//check user password against saved db password
 	err = util.CheckPassword(user.HashedPassword,req.Password)
 	if err != nil{
-		ctx.JSON(http.StatusUnauthorized,errorResponse(err))
+		ctx.JSON(http.StatusUnauthorized,errorMessage("Invalid username or password"))
 		return
 	}
 
@@ -164,4 +165,39 @@ func (server *Server)loginUser(ctx *gin.Context){
 
 	ctx.JSON(http.StatusOK,resp)
 
+}
+
+
+type authHeader struct{
+	Authorization string `header:"Authorization" binding:"required"`
+}
+
+
+//get all users in the app
+func (server *Server)getAllUsers(ctx *gin.Context){
+
+	var req authHeader
+
+	err := ctx.ShouldBindHeader(&req)
+	if err != nil{
+		ctx.JSON(http.StatusUnauthorized,errorResponse(err))
+		return
+	}
+	authParts := strings.Split(req.Authorization," ")
+	
+	if len(authParts) != 2 || authParts[0] != "Bearer"{
+		ctx.JSON(http.StatusUnauthorized,errorMessage("invalid or missing authorization header"))
+		return
+	}
+	authorizationBearerToken := authParts[1]
+	//verify that the token is valid
+	payload, err := server.tokenMaker.VerifyToken(authorizationBearerToken)
+	if err != nil{
+		ctx.JSON(http.StatusUnauthorized,errorResponse(err))
+		return
+	}
+
+
+
+	ctx.JSON(http.StatusOK,payload)
 }
