@@ -20,6 +20,7 @@ type Querier interface {
 	DeleteTransfer(ctx context.Context, id uuid.UUID) error
 	GetAccount(ctx context.Context, id uuid.UUID) (Account, error)
 	GetAccountByIdForUpdate(ctx context.Context, id uuid.UUID) (Account, error)
+	GetAllUsers(ctx context.Context) ([]User, error)
 	GetEntry(ctx context.Context, id uuid.UUID) (Entry, error)
 	GetTransfer(ctx context.Context, id uuid.UUID) (Transfer, error)
 	GetUser(ctx context.Context, username string) (User, error)

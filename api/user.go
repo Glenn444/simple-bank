@@ -172,6 +172,14 @@ type authHeader struct{
 	Authorization string `header:"Authorization" binding:"required"`
 }
 
+type allUsersResponse struct {
+	Username          string    `json:"username"`
+	FullName          string    `json:"full_name"`
+	Email             string    `json:"email"`
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt         time.Time `json:"created_at"`
+}
+
 
 //get all users in the app
 func (server *Server)getAllUsers(ctx *gin.Context){
@@ -191,13 +199,30 @@ func (server *Server)getAllUsers(ctx *gin.Context){
 	}
 	authorizationBearerToken := authParts[1]
 	//verify that the token is valid
-	payload, err := server.tokenMaker.VerifyToken(authorizationBearerToken)
+	_, err = server.tokenMaker.VerifyToken(authorizationBearerToken)
 	if err != nil{
 		ctx.JSON(http.StatusUnauthorized,errorResponse(err))
 		return
 	}
+	
+	users,err := server.store.GetAllUsers(ctx)
+	if err != nil{
+		ctx.JSON(http.StatusInternalServerError,errorResponse(err))
+		return
+	}
+
+	var allUsers []allUsersResponse
+	for _,user:= range users{
+		gotUser := allUsersResponse{
+			Username: user.Username,
+			FullName: user.FullName,
+			Email: user.Email,
+			PasswordChangedAt: user.PasswordChangedAt,
+			CreatedAt: user.CreatedAt,
+		}
+		allUsers = append(allUsers, gotUser)
+	}
 
 
-
-	ctx.JSON(http.StatusOK,payload)
+	ctx.JSON(http.StatusOK,allUsers)
 }

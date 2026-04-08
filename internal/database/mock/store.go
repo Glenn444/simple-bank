@@ -174,6 +174,21 @@ func (mr *MockStoreMockRecorder) GetAccountByIdForUpdate(ctx, id any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAccountByIdForUpdate", reflect.TypeOf((*MockStore)(nil).GetAccountByIdForUpdate), ctx, id)
 }
 
+// GetAllUsers mocks base method.
+func (m *MockStore) GetAllUsers(ctx context.Context) ([]database.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllUsers", ctx)
+	ret0, _ := ret[0].([]database.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllUsers indicates an expected call of GetAllUsers.
+func (mr *MockStoreMockRecorder) GetAllUsers(ctx any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllUsers", reflect.TypeOf((*MockStore)(nil).GetAllUsers), ctx)
+}
+
 // GetEntry mocks base method.
 func (m *MockStore) GetEntry(ctx context.Context, id uuid.UUID) (database.Entry, error) {
 	m.ctrl.T.Helper()

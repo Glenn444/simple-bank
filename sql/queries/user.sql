@@ -11,3 +11,7 @@ INSERT INTO users (
 -- name: GetUser :one
 SELECT * FROM users
 WHERE username = $1 LIMIT 1;
+
+-- name: GetAllUsers :many
+SELECT username,full_name,email,* FROM users
+ORDER BY username;
