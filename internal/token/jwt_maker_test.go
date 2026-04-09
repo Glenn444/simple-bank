@@ -24,7 +24,7 @@ func TestJWTMaker(t *testing.T){
 	require.NoError(t,errToken)
 	require.NotEmpty(t,token)
 
-	payload,errPayload := m.VerifyToken(token)
+	payload,errPayload := m.VerifyToken(token,AccessToken)
 	require.NoError(t,errPayload)
 	require.NotEmpty(t,payload)
 
@@ -46,7 +46,7 @@ func TestExpiredToken(t *testing.T){
 	require.NoError(t,err)
 	require.NotEmpty(t,token)
 
-	payload,errPayload := m.VerifyToken(token)
+	payload,errPayload := m.VerifyToken(token,AccessToken)
 	require.Error(t,errPayload)
 	require.EqualError(t,errPayload,ErrExpiredToken.Error())
 	require.Nil(t,payload)
@@ -71,7 +71,7 @@ func TestInvalidJWTTokenAlgNone(t *testing.T){
 	m,err := NewJWTMaker(util.RandomString(32))
 
 	//4. verify the token
-	payloadToken,err := m.VerifyToken(token)
+	payloadToken,err := m.VerifyToken(token,AccessToken)
 	require.Error(t,err)
 	require.Nil(t,payloadToken)
 	require.EqualError(t,err,ErrInvalidToken.Error())

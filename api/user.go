@@ -226,8 +226,8 @@ func (server *Server)getAllUsers(ctx *gin.Context){
 		return
 	}
 	authorizationBearerToken := authParts[1]
-	//verify that the token is valid
-	_, err = server.tokenMaker.VerifyToken(authorizationBearerToken)
+	//verify that the token is valid and it's not a refreshToken
+	_, err = server.tokenMaker.VerifyToken(authorizationBearerToken,token.AccessToken)
 	if err != nil{
 		ctx.JSON(http.StatusUnauthorized,errorResponse(err))
 		return
@@ -259,6 +259,10 @@ type refreshTokenRequest struct{
 	RefreshToken string `json:"refresh_token" binding:"required"`
 }
 
+type refreshTokenResponse struct{
+	AccessToken string `json:"access_token"`
+}
+
 func (server *Server)refreshToken(ctx *gin.Context){
 	var req refreshTokenRequest
 
@@ -269,7 +273,7 @@ func (server *Server)refreshToken(ctx *gin.Context){
 	}
 
 	//verify the refresh token and get the payload
-	payload, err := server.tokenMaker.VerifyToken(req.RefreshToken)
+	payload, err := server.tokenMaker.VerifyToken(req.RefreshToken,token.RefreshToken)
 	if err != nil{
 		ctx.JSON(http.StatusUnauthorized,errorResponse(err))
 		return
@@ -282,5 +286,9 @@ func (server *Server)refreshToken(ctx *gin.Context){
 		return
 	}
 
-	ctx.JSON(http.StatusOK,accessToken)
+	resp := refreshTokenResponse{
+		AccessToken: accessToken,
+	}
+
+	ctx.JSON(http.StatusOK,resp)
 }

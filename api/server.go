@@ -56,6 +56,8 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 
 	router.POST("/login", server.loginUser)
 
+	router.POST("/token/refresh",server.refreshToken)
+
 	server.router = router
 	return server, nil
 }
