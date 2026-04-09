@@ -15,3 +15,8 @@ WHERE username = $1 LIMIT 1;
 -- name: GetAllUsers :many
 SELECT username,full_name,email,* FROM users
 ORDER BY username;
+
+-- name: UpdateRefreshToken :exec
+UPDATE users
+SET refresh_token = $2
+WHERE username = $1;

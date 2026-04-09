@@ -175,10 +175,10 @@ func (mr *MockStoreMockRecorder) GetAccountByIdForUpdate(ctx, id any) *gomock.Ca
 }
 
 // GetAllUsers mocks base method.
-func (m *MockStore) GetAllUsers(ctx context.Context) ([]database.User, error) {
+func (m *MockStore) GetAllUsers(ctx context.Context) ([]database.GetAllUsersRow, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAllUsers", ctx)
-	ret0, _ := ret[0].([]database.User)
+	ret0, _ := ret[0].([]database.GetAllUsersRow)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -320,6 +320,20 @@ func (m *MockStore) UpdateEntry(ctx context.Context, arg database.UpdateEntryPar
 func (mr *MockStoreMockRecorder) UpdateEntry(ctx, arg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEntry", reflect.TypeOf((*MockStore)(nil).UpdateEntry), ctx, arg)
+}
+
+// UpdateRefreshToken mocks base method.
+func (m *MockStore) UpdateRefreshToken(ctx context.Context, arg database.UpdateRefreshTokenParams) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateRefreshToken", ctx, arg)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateRefreshToken indicates an expected call of UpdateRefreshToken.
+func (mr *MockStoreMockRecorder) UpdateRefreshToken(ctx, arg any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRefreshToken", reflect.TypeOf((*MockStore)(nil).UpdateRefreshToken), ctx, arg)
 }
 
 // UpdateTransfer mocks base method.

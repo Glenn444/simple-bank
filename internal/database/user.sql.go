@@ -7,6 +7,7 @@ package database
 
 import (
 	"context"
+	"time"
 )
 
 const createUsers = `-- name: CreateUsers :one
@@ -17,7 +18,7 @@ INSERT INTO users (
     email
 ) VALUES (
     $1,$2,$3,$4
-) RETURNING username, hashed_password, full_name, email, password_changed_at, created_at
+) RETURNING username, hashed_password, full_name, email, password_changed_at, created_at, refresh_token
 `
 
 type CreateUsersParams struct {
@@ -42,31 +43,49 @@ func (q *Queries) CreateUsers(ctx context.Context, arg CreateUsersParams) (User,
 		&i.Email,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
+		&i.RefreshToken,
 	)
 	return i, err
 }
 
 const getAllUsers = `-- name: GetAllUsers :many
-SELECT username, hashed_password, full_name, email, password_changed_at, created_at FROM users
+SELECT username,full_name,email,username, hashed_password, full_name, email, password_changed_at, created_at, refresh_token FROM users
 ORDER BY username
 `
 
-func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
+type GetAllUsersRow struct {
+	Username          string    `json:"username"`
+	FullName          string    `json:"full_name"`
+	Email             string    `json:"email"`
+	Username_2        string    `json:"username_2"`
+	HashedPassword    string    `json:"hashed_password"`
+	FullName_2        string    `json:"full_name_2"`
+	Email_2           string    `json:"email_2"`
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt         time.Time `json:"created_at"`
+	RefreshToken      string    `json:"refresh_token"`
+}
+
+func (q *Queries) GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error) {
 	rows, err := q.db.QueryContext(ctx, getAllUsers)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []User{}
+	items := []GetAllUsersRow{}
 	for rows.Next() {
-		var i User
+		var i GetAllUsersRow
 		if err := rows.Scan(
 			&i.Username,
-			&i.HashedPassword,
 			&i.FullName,
 			&i.Email,
+			&i.Username_2,
+			&i.HashedPassword,
+			&i.FullName_2,
+			&i.Email_2,
 			&i.PasswordChangedAt,
 			&i.CreatedAt,
+			&i.RefreshToken,
 		); err != nil {
 			return nil, err
 		}
@@ -82,7 +101,7 @@ func (q *Queries) GetAllUsers(ctx context.Context) ([]User, error) {
 }
 
 const getUser = `-- name: GetUser :one
-SELECT username, hashed_password, full_name, email, password_changed_at, created_at FROM users
+SELECT username, hashed_password, full_name, email, password_changed_at, created_at, refresh_token FROM users
 WHERE username = $1 LIMIT 1
 `
 
@@ -96,6 +115,23 @@ func (q *Queries) GetUser(ctx context.Context, username string) (User, error) {
 		&i.Email,
 		&i.PasswordChangedAt,
 		&i.CreatedAt,
+		&i.RefreshToken,
 	)
 	return i, err
+}
+
+const updateRefreshToken = `-- name: UpdateRefreshToken :exec
+UPDATE users
+SET refresh_token = $2
+WHERE username = $1
+`
+
+type UpdateRefreshTokenParams struct {
+	Username     string `json:"username"`
+	RefreshToken string `json:"refresh_token"`
+}
+
+func (q *Queries) UpdateRefreshToken(ctx context.Context, arg UpdateRefreshTokenParams) error {
+	_, err := q.db.ExecContext(ctx, updateRefreshToken, arg.Username, arg.RefreshToken)
+	return err
 }

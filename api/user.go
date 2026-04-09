@@ -7,7 +7,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Glenn444/banking-app/internal/database"
 	db "github.com/Glenn444/banking-app/internal/database"
+	"github.com/Glenn444/banking-app/internal/token"
 	"github.com/Glenn444/banking-app/util"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
@@ -120,8 +122,10 @@ type loginUserResponse struct {
 	PasswordChangedAt time.Time `json:"password_changed_at"`
 	CreatedAt         time.Time `json:"created_at"`
 	AccessToken       string    `json:"access_token"`
+	RefreshToken string `json:"refresh_token"`
 }
 
+//login user
 func (server *Server)loginUser(ctx *gin.Context){
 	var req loginUserRequest
 	err := ctx.ShouldBindJSON(&req)
@@ -132,9 +136,10 @@ func (server *Server)loginUser(ctx *gin.Context){
 
 	user, err := server.store.GetUser(ctx,req.Username)
 	if err != nil{
-		// possible errors, 1. user not found
+		// possible errors,
+		//1. user not found
 		if err == sql.ErrNoRows{
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			ctx.JSON(http.StatusNotFound, errorMessage("user does not exist, sign up"))
 			return
 		}
 		//2. something happened to the database
@@ -148,11 +153,33 @@ func (server *Server)loginUser(ctx *gin.Context){
 		return
 	}
 
-	//create the token
-	access_token,err := server.tokenMaker.CreateToken(req.Username,server.config.AcessTokenDuration)
+	//create the access token
+	access_token,err := server.tokenMaker.CreateToken(req.Username,token.AccessToken,server.config.AcessTokenDuration)
 	if err != nil{
 		ctx.JSON(http.StatusInternalServerError,errorResponse(err))
+		return
 	}
+
+	//create the refresh token signed with 1 hour and save to the database
+	week := time.Hour * 24 * 7
+	
+	refresh_token,err := server.tokenMaker.CreateToken(req.Username,token.RefreshToken,week)
+	if err != nil{
+		ctx.JSON(http.StatusInternalServerError,errorResponse(err))
+		return
+	}
+
+	err = server.store.UpdateRefreshToken(ctx,database.UpdateRefreshTokenParams{
+		Username: user.Username,
+		RefreshToken: refresh_token,
+	})
+
+	if err != nil{
+		ctx.JSON(http.StatusInternalServerError,errorResponse(err))
+		return
+	}
+
+
 
 	resp := loginUserResponse{
 		Username: req.Username,
@@ -161,6 +188,7 @@ func (server *Server)loginUser(ctx *gin.Context){
 		PasswordChangedAt: user.PasswordChangedAt,
 		CreatedAt: user.CreatedAt,
 		AccessToken: access_token,
+		RefreshToken: refresh_token,
 	}
 
 	ctx.JSON(http.StatusOK,resp)
@@ -225,4 +253,34 @@ func (server *Server)getAllUsers(ctx *gin.Context){
 
 
 	ctx.JSON(http.StatusOK,allUsers)
+}
+
+type refreshTokenRequest struct{
+	RefreshToken string `json:"refresh_token" binding:"required"`
+}
+
+func (server *Server)refreshToken(ctx *gin.Context){
+	var req refreshTokenRequest
+
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil{
+		ctx.JSON(http.StatusBadRequest,errorResponse(err))
+		return
+	}
+
+	//verify the refresh token and get the payload
+	payload, err := server.tokenMaker.VerifyToken(req.RefreshToken)
+	if err != nil{
+		ctx.JSON(http.StatusUnauthorized,errorResponse(err))
+		return
+	}
+
+	//refreshtoken is valid issue new access token
+	accessToken,err := server.tokenMaker.CreateToken(payload.Subject,token.AccessToken,server.config.AcessTokenDuration)
+	if err != nil{
+		ctx.JSON(http.StatusInternalServerError,errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK,accessToken)
 }

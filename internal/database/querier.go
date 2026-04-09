@@ -20,7 +20,7 @@ type Querier interface {
 	DeleteTransfer(ctx context.Context, id uuid.UUID) error
 	GetAccount(ctx context.Context, id uuid.UUID) (Account, error)
 	GetAccountByIdForUpdate(ctx context.Context, id uuid.UUID) (Account, error)
-	GetAllUsers(ctx context.Context) ([]User, error)
+	GetAllUsers(ctx context.Context) ([]GetAllUsersRow, error)
 	GetEntry(ctx context.Context, id uuid.UUID) (Entry, error)
 	GetTransfer(ctx context.Context, id uuid.UUID) (Transfer, error)
 	GetUser(ctx context.Context, username string) (User, error)
@@ -29,6 +29,7 @@ type Querier interface {
 	ListTransfers(ctx context.Context, arg ListTransfersParams) ([]Transfer, error)
 	UpdateAccount(ctx context.Context, arg UpdateAccountParams) error
 	UpdateEntry(ctx context.Context, arg UpdateEntryParams) error
+	UpdateRefreshToken(ctx context.Context, arg UpdateRefreshTokenParams) error
 	UpdateTransfer(ctx context.Context, arg UpdateTransferParams) error
 }
 
