@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/Glenn444/banking-app/internal/database"
@@ -111,7 +110,7 @@ func (server *Server) getUser(ctx *gin.Context) {
 }
 
 type loginUserRequest struct {
-	Username    string `json:"username" binding:"required"`
+	Username    string `json:"username" binding:"required,min=6"`
 	Password string `json:"password" binding:"required"`
 }
 
@@ -196,9 +195,6 @@ func (server *Server)loginUser(ctx *gin.Context){
 }
 
 
-type authHeader struct{
-	Authorization string `header:"Authorization" binding:"required"`
-}
 
 type allUsersResponse struct {
 	Username          string    `json:"username"`
@@ -212,26 +208,6 @@ type allUsersResponse struct {
 //get all users in the app
 func (server *Server)getAllUsers(ctx *gin.Context){
 
-	var req authHeader
-
-	err := ctx.ShouldBindHeader(&req)
-	if err != nil{
-		ctx.JSON(http.StatusUnauthorized,errorResponse(err))
-		return
-	}
-	authParts := strings.Split(req.Authorization," ")
-	
-	if len(authParts) != 2 || authParts[0] != "Bearer"{
-		ctx.JSON(http.StatusUnauthorized,errorMessage("invalid or missing authorization header"))
-		return
-	}
-	authorizationBearerToken := authParts[1]
-	//verify that the token is valid and it's not a refreshToken
-	_, err = server.tokenMaker.VerifyToken(authorizationBearerToken,token.AccessToken)
-	if err != nil{
-		ctx.JSON(http.StatusUnauthorized,errorResponse(err))
-		return
-	}
 	
 	users,err := server.store.GetAllUsers(ctx)
 	if err != nil{
