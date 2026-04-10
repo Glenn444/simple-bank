@@ -77,6 +77,13 @@ type SearchUserParams struct {
 	Username string `form:"username" binding:"required,alphanum"`
 }
 
+type GetUserResponse struct {
+	Username          string    `json:"username"`
+	FullName          string    `json:"full_name"`
+	Email             string    `json:"email"`
+	PasswordChangedAt time.Time `json:"password_changed_at"`
+	CreatedAt         time.Time `json:"created_at"`
+}
 func (server *Server) getUser(ctx *gin.Context) {
 	var param SearchUserParams
 	if err := ctx.ShouldBindQuery(&param); err != nil {
@@ -98,7 +105,7 @@ func (server *Server) getUser(ctx *gin.Context) {
 		return
 	}
 
-	resp := CreateUserResponse{
+	resp := GetUserResponse{
 		Username:          user.Username,
 		Email:             user.Email,
 		FullName:          user.FullName,
