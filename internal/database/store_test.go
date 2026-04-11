@@ -127,8 +127,8 @@ func TestTransferTx_Concurrent(t *testing.T) {
 	// In your concurrent test, add this before the assertion:
 	fmt.Printf("Expected final balance: %s, Actual final balance: %s\n",
 		expectedBalance1.String(), finalAccount1.Balance.String())
-	require.Equal(t, expectedBalance1, finalAccount1.Balance)
-	require.Equal(t, expectedBalance2, finalAccount2.Balance)
+	require.Equal(t, expectedBalance1.String(), finalAccount1.Balance.String())
+	require.Equal(t, expectedBalance2.String(), finalAccount2.Balance.String())
 
 	// Verify total money in system is conserved
 	totalBefore := initialBalance1.Add(initialBalance2)
