@@ -125,8 +125,8 @@ func TestTransferTx_Concurrent(t *testing.T) {
 	expectedBalance2 := initialBalance2.Add(totalTransferred)
 
 	// In your concurrent test, add this before the assertion:
-	fmt.Printf("Expected final balance: %s, Actual final balance: %s\n",
-		expectedBalance1.String(), finalAccount1.Balance.String())
+	//fmt.Printf("Expected final balance: %s, Actual final balance: %s\n",
+		//expectedBalance1.String(), finalAccount1.Balance.String())
 	require.Equal(t, expectedBalance1.String(), finalAccount1.Balance.String())
 	require.Equal(t, expectedBalance2.String(), finalAccount2.Balance.String())
 

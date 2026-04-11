@@ -114,11 +114,13 @@ func TestGetUser(t *testing.T) {
 
 	testCases := []struct {
 		name          string
+		urlPath       string
 		buildStubs    func(store *mock_database.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
+			urlPath: fmt.Sprintf("/user?username=%s", user.Username),
 			buildStubs: func(store *mock_database.MockStore) {
 				store.
 					EXPECT().GetUser(gomock.Any(), gomock.Eq(user.Username)).
@@ -127,6 +129,47 @@ func TestGetUser(t *testing.T) {
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
 				require.Equal(t, http.StatusOK, recorder.Code)
+			},
+		},
+		{
+			name: "NotFound",
+			urlPath: fmt.Sprintf("/user?username=%s", user.Username),
+			buildStubs: func(store *mock_database.MockStore) {
+				store.
+					EXPECT().
+					GetUser(gomock.Any(), gomock.Eq(user.Username)).
+					Times(1).
+					Return(db.User{}, sql.ErrNoRows)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusNotFound, recorder.Code)
+			},
+		},
+		{
+			name: "BadRequest",
+			urlPath: "/user",
+			buildStubs: func(store *mock_database.MockStore) {
+				store.
+					EXPECT().
+					GetUser(gomock.Any(), gomock.Any()).
+					Times(0)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t, http.StatusBadRequest, recorder.Code)
+			},
+		},
+		{
+			name: "InternalServerError",
+			urlPath: fmt.Sprintf("/user?username=%s",user.Username),
+			buildStubs: func(store *mock_database.MockStore) {
+				store.
+				EXPECT().
+				GetUser(gomock.Any(),gomock.Eq(user.Username)).
+				Times(1).
+				Return(db.User{},sql.ErrConnDone)
+			},
+			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
+				require.Equal(t,http.StatusInternalServerError,recorder.Code)
 			},
 		},
 	}
@@ -144,8 +187,8 @@ func TestGetUser(t *testing.T) {
 
 			server := newTestServer(t, store)
 
-			urlPath := fmt.Sprintf("/user?username=%s", user.Username)
-			request, err := http.NewRequest(http.MethodGet, urlPath, nil)
+			
+			request, err := http.NewRequest(http.MethodGet, tc.urlPath, nil)
 			require.NoError(t, err)
 
 			recorder := httptest.NewRecorder()
