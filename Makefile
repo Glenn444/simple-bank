@@ -18,7 +18,7 @@ migrateup:
 migratedown:
 	goose -dir sql/schema postgres "$(DB_URL)" down
 
-generatesql:
+sqlc:
 	sqlc generate
 
 test:

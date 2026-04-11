@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	db "github.com/Glenn444/banking-app/internal/database"
+	"github.com/Glenn444/banking-app/internal/token"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/lib/pq"
@@ -23,6 +24,12 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if authPayload.Username != req.Owner {
+		ctx.JSON(http.StatusForbidden, errorMessage("you can only create your own account"))
+		return
+	}
+
 	arg := db.CreateAccountParams{
 		Owner:    req.Owner,
 		Currency: req.Currency,
@@ -33,10 +40,13 @@ func (server *Server) createAccount(ctx *gin.Context) {
 	if err != nil {
 		if pqError, ok := err.(*pq.Error); ok {
 			switch pqError.Code.Name() {
-			case "foreign_key_violation", "unique_violation":
-				ctx.JSON(http.StatusForbidden, errorResponse(err))
+			case "foreign_key_violation":
+				ctx.JSON(http.StatusForbidden, errorMessage("owner does not exist"))
+				return
+			case "unique_violation":
+				ctx.JSON(http.StatusConflict, errorMessage("owner already exists"))
+				return
 			}
-			//log.Println(pqError.Code.Name())
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -59,14 +69,24 @@ func (server *Server) getAccountById(ctx *gin.Context) {
 		return
 	}
 
-	argId, _ := uuid.Parse(accountId.ID)
+	argId, passErr := uuid.Parse(accountId.ID)
+	if passErr != nil {
+		ctx.JSON(http.StatusBadRequest, errorMessage("invalid account id format"))
+		return
+	}
 	acc, err := server.store.GetAccount(ctx, argId)
+
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if authPayload.Username != acc.Owner {
+		ctx.JSON(http.StatusForbidden, errorMessage("account not found"))
 		return
 	}
 
@@ -78,6 +98,7 @@ type listAllAccountsParams struct {
 	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"` //limit
 }
 
+//list accounts associated to username
 func (server *Server) listAllAccounts(ctx *gin.Context) {
 	var req listAllAccountsParams
 
@@ -86,7 +107,11 @@ func (server *Server) listAllAccounts(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	
+
 	arg := db.ListAccountsParams{
+		Owner: authPayload.Username,
 		Limit:  req.PageSize,
 		Offset: (req.PageNum - 1) * req.PageSize,
 	}
@@ -95,6 +120,9 @@ func (server *Server) listAllAccounts(ctx *gin.Context) {
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
+	}
+	if accs == nil{
+		accs = []db.Account{}
 	}
 
 	ctx.JSON(http.StatusOK, accs)

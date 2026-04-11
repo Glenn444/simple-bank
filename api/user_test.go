@@ -101,13 +101,6 @@ func TestCreateUser(t *testing.T) {
 	}
 }
 
-// func hashedPassword(t *testing.T,pass string) string {
-// 	//password := util.RandomString(8)
-// 	hash, err := util.HashPassword(pass)
-// 	require.NoError(t, err)
-
-// 	return hash
-// }
 
 func TestGetUser(t *testing.T) {
 	user := randomUser()

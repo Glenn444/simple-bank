@@ -7,27 +7,35 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	db "github.com/Glenn444/banking-app/internal/database"
 	mock_database "github.com/Glenn444/banking-app/internal/database/mock"
+	"github.com/Glenn444/banking-app/internal/token"
 	"github.com/Glenn444/banking-app/util"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
+
 func TestGetAccountApi(t *testing.T) {
-	account := randomAccount()
+	user := randomUser()
+	account := randomAccount(user.Username)
 
 	testCases := []struct {
 		name          string
 		accountID     string
+		setupAuth func(t *testing.T,request *http.Request,tokenMaker token.Maker)
 		buildStubs    func(store *mock_database.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name:      "OK",
 			accountID: account.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t,request,tokenMaker,"Bearer",user.Username,time.Minute)
+			},
 			buildStubs: func(store *mock_database.MockStore) {
 				//build stubs
 				store.EXPECT().
@@ -50,6 +58,9 @@ func TestGetAccountApi(t *testing.T) {
 		{
 			name:      "NotFound",
 			accountID: account.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t,request,tokenMaker,"Bearer",account.Owner,time.Minute)
+			},
 			buildStubs: func(store *mock_database.MockStore) {
 				//build stubs
 				store.EXPECT().
@@ -65,6 +76,9 @@ func TestGetAccountApi(t *testing.T) {
 		{
 			name:      "InternalServerError",
 			accountID: account.ID.String(),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t,request,tokenMaker,"Bearer",account.Owner,time.Minute)
+			},
 			buildStubs: func(store *mock_database.MockStore) {
 				//build stubs
 				store.EXPECT().
@@ -80,6 +94,9 @@ func TestGetAccountApi(t *testing.T) {
 		{
 			name:      "InvalidID",
 			accountID: "invalid-uuid",
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t,request,tokenMaker,"Bearer",account.Owner,time.Minute)
+			},
 			buildStubs: func(store *mock_database.MockStore) {
 				//build stubs
 				store.EXPECT().
@@ -113,6 +130,7 @@ func TestGetAccountApi(t *testing.T) {
 			request, err := http.NewRequest(http.MethodGet, url, nil)
 			require.NoError(t, err)
 
+			tc.setupAuth(t,request,server.tokenMaker)
 			server.router.ServeHTTP(recorder, request)
 			//check response
 			tc.checkResponse(t, recorder)
@@ -120,10 +138,10 @@ func TestGetAccountApi(t *testing.T) {
 	}
 }
 
-func randomAccount() db.Account {
+func randomAccount(owner string) db.Account {
 	return db.Account{
 		ID:       uuid.New(),
-		Owner:    util.RandomOwner(),
+		Owner:    owner,
 		Balance:  util.RandomMoney(),
 		Currency: util.RandomCurrency(),
 	}

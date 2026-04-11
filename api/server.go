@@ -44,17 +44,20 @@ func NewServer(config util.Config, store db.Store) (*Server, error) {
 	//add routes to router
 	router.GET("/", server.welcome)
 
-	router.POST("/accounts", server.createAccount)
-	router.GET("/accounts/:id", server.getAccountById)
-	router.GET("/accounts", server.listAllAccounts)
+	authRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	authRoutes.POST("/accounts", server.createAccount)
+	authRoutes.GET("/accounts/:id", server.getAccountById)
+	authRoutes.GET("/accounts", server.listAllAccounts)
 
-	router.POST("/transfers", server.createTransfer)
+	authRoutes.POST("/transfers", server.createTransfer)
+
+	authRoutes.GET("/user", server.getUser)
+	authRoutes.GET("/users", server.getAllUsers)
+
 
 	router.POST("/user", server.createUser)
-	router.GET("/user", server.getUser)
-	router.GET("/users", server.getAllUsers)
-
-	router.POST("/login", server.loginUser)
+	
+	router.POST("/users/login", server.loginUser)
 
 	router.POST("/token/refresh",server.refreshToken)
 
@@ -72,7 +75,7 @@ func errorResponse(err error) gin.H {
 }
 
 func errorMessage(message string) gin.H {
-	return gin.H{"error:": message}
+	return gin.H{"error": message}
 }
 
 func (server *Server) welcome(ctx *gin.Context) {

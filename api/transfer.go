@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	db "github.com/Glenn444/banking-app/internal/database"
+	"github.com/Glenn444/banking-app/internal/token"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"github.com/shopspring/decimal"
@@ -25,13 +26,21 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 		return
 	}
 
+	fromAccount,valid := server.validAccount(ctx,req.FromAccountID,req.Currency)
+	if !valid{
+		return
+	}
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	//check if the from account is valid
-	if !server.validAccountCurrency(ctx,req.FromAccountID,req.Currency){
+	if fromAccount.Owner != authPayload.Username {
+		ctx.JSON(http.StatusForbidden,errorMessage("from account doesn't belong to you"))
 		return
 	}
 
 	//check if the to account is valid
-	if !server.validAccountCurrency(ctx,req.ToAccountID,req.Currency){
+	_,valid = server.validAccount(ctx,req.ToAccountID,req.Currency)
+	if !valid{
 		return
 	}
 
@@ -50,21 +59,21 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 }
 
 //check if to account and from account have matching currency type
-func (server *Server) validAccountCurrency(ctx *gin.Context, accounID uuid.UUID, currency string) bool {
+func (server *Server) validAccount(ctx *gin.Context, accounID uuid.UUID, currency string) (db.Account,bool) {
 	account, err := server.store.GetAccount(ctx, accounID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return false
+			return account,false
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return false
+		return account,false
 	}
 
 	if account.Currency != currency {
 		err := fmt.Errorf("account [%v] currency mismatch: %s vs %s", account.ID, account.Currency, currency)
 		ctx.JSON(http.StatusBadRequest,errorResponse(err))
-		return false
+		return account,false
 	}
-	return true
+	return account,true
 }
