@@ -13,6 +13,7 @@ import (
 	"github.com/Glenn444/banking-app/internal/database"
 	db "github.com/Glenn444/banking-app/internal/database"
 	mock_database "github.com/Glenn444/banking-app/internal/database/mock"
+	"github.com/Glenn444/banking-app/internal/token"
 	"github.com/Glenn444/banking-app/util"
 	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
@@ -108,12 +109,16 @@ func TestGetUser(t *testing.T) {
 	testCases := []struct {
 		name          string
 		urlPath       string
+		setupAuth func(t *testing.T,request *http.Request,tokenMaker token.Maker)
 		buildStubs    func(store *mock_database.MockStore)
 		checkResponse func(t *testing.T, recorder *httptest.ResponseRecorder)
 	}{
 		{
 			name: "OK",
 			urlPath: fmt.Sprintf("/user?username=%s", user.Username),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t,request,tokenMaker,"Bearer",user.Username,time.Minute)
+			},
 			buildStubs: func(store *mock_database.MockStore) {
 				store.
 					EXPECT().GetUser(gomock.Any(), gomock.Eq(user.Username)).
@@ -127,6 +132,9 @@ func TestGetUser(t *testing.T) {
 		{
 			name: "NotFound",
 			urlPath: fmt.Sprintf("/user?username=%s", user.Username),
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t,request,tokenMaker,"Bearer",user.Username,time.Minute)
+			},
 			buildStubs: func(store *mock_database.MockStore) {
 				store.
 					EXPECT().
@@ -141,6 +149,9 @@ func TestGetUser(t *testing.T) {
 		{
 			name: "BadRequest",
 			urlPath: "/user",
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t,request,tokenMaker,"Bearer",user.Username,time.Minute)
+			},
 			buildStubs: func(store *mock_database.MockStore) {
 				store.
 					EXPECT().
@@ -153,6 +164,9 @@ func TestGetUser(t *testing.T) {
 		},
 		{
 			name: "InternalServerError",
+			setupAuth: func(t *testing.T, request *http.Request, tokenMaker token.Maker) {
+				addAuthorization(t,request,tokenMaker,"Bearer",user.Username,time.Minute)
+			},
 			urlPath: fmt.Sprintf("/user?username=%s",user.Username),
 			buildStubs: func(store *mock_database.MockStore) {
 				store.
@@ -184,6 +198,7 @@ func TestGetUser(t *testing.T) {
 			request, err := http.NewRequest(http.MethodGet, tc.urlPath, nil)
 			require.NoError(t, err)
 
+			tc.setupAuth(t,request,server.tokenMaker)
 			recorder := httptest.NewRecorder()
 
 			server.router.ServeHTTP(recorder, request)
