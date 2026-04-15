@@ -14,18 +14,18 @@ jobs:
   test:
     name: test
     env:
-      DB_URL: postgres://postgres:1234@localhost:5432/simple_bank?sslmode=disable
+      DB_URL: postgres://postgres:secret@localhost:5432/simple_bank?sslmode=disable
     runs-on: ubuntu-latest
 
     services:
       # Label used to access the service container
       postgres:
         # Docker Hub image
-        image: postgres
+        image: postgres:18-alpine
         # Provide the password for postgres
         env:
           POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: 1234
+          POSTGRES_PASSWORD: secret
           POSTGRES_DB: simple_bank
         # Set health checks to wait until postgres has started
         options: >-
