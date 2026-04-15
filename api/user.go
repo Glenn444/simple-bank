@@ -53,7 +53,7 @@ func (server *Server) createUser(ctx *gin.Context) {
 		if pqError, ok := err.(*pq.Error); ok {
 			switch pqError.Code.Name() {
 			case "unique_violation":
-				ctx.JSON(http.StatusForbidden, errorResponse(err))
+				ctx.JSON(http.StatusConflict, errorResponse(err))
 				return
 			}
 		}

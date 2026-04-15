@@ -32,13 +32,13 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	}
 
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
-	//check if the from account is valid
+	//check if the from_account is valid
 	if fromAccount.Owner != authPayload.Username {
 		ctx.JSON(http.StatusForbidden,errorMessage("from account doesn't belong to you"))
 		return
 	}
 
-	//check if the to account is valid
+	//check if the to_account is valid
 	_,valid = server.validAccount(ctx,req.ToAccountID,req.Currency)
 	if !valid{
 		return
@@ -58,7 +58,7 @@ func (server *Server) createTransfer(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 
-//check if to account and from account have matching currency type
+//check if to_account and from_account have matching currency type
 func (server *Server) validAccount(ctx *gin.Context, accounID uuid.UUID, currency string) (db.Account,bool) {
 	account, err := server.store.GetAccount(ctx, accounID)
 	if err != nil {
