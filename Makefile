@@ -1,4 +1,4 @@
-include .env
+-include .env
 export
 
 DB_URL ?= postgres://postgres:secret@localhost:5432/simple_bank?sslmode=disable
