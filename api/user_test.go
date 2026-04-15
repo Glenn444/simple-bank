@@ -69,7 +69,7 @@ func TestCreateUser(t *testing.T) {
 					Return(database.User{}, &pq.Error{Code: "23505"}) //postgres unique violation
 			},
 			checkResponse: func(t *testing.T, recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusForbidden, recorder.Code)
+				require.Equal(t, http.StatusConflict, recorder.Code)
 			},
 		},
 	}

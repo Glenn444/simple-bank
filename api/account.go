@@ -44,7 +44,7 @@ func (server *Server) createAccount(ctx *gin.Context) {
 				ctx.JSON(http.StatusForbidden, errorMessage("owner does not exist"))
 				return
 			case "unique_violation":
-				ctx.JSON(http.StatusConflict, errorMessage("owner already exists"))
+				ctx.JSON(http.StatusConflict, errorMessage("account with this currency already exists for owner"))
 				return
 			}
 		}

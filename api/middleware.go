@@ -10,6 +10,7 @@ import (
 
 const(
 	authorizationPayloadKey = "authorization_payload"
+	authorizationTypeBearer = "Bearer"
 )
 
 type authHeader struct {
