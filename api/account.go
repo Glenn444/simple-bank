@@ -94,13 +94,15 @@ func (server *Server) getAccountById(ctx *gin.Context) {
 }
 
 type listAllAccountsParams struct {
-	PageNum  int32 `form:"page_num" binding:"required,min=1"`         //offset
-	PageSize int32 `form:"page_size" binding:"required,min=5,max=10"` //limit
+	PageNum  int32 `form:"page_num" binding:"min=1"`         //offset
+	PageSize int32 `form:"page_size" binding:"min=5,max=10"` //limit
 }
 
 //list accounts associated to username
 func (server *Server) listAllAccounts(ctx *gin.Context) {
 	var req listAllAccountsParams
+	req.PageNum = 1  // default
+    req.PageSize = 5 // default
 
 	if err := ctx.ShouldBindQuery(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
